@@ -1,4 +1,4 @@
-#coding: utf-8
+# coding: utf-8
 '''
 Author:     Sean Luo
 Email:      Sean.S.Luo@gmail.com
@@ -9,7 +9,8 @@ Date:       2011-12-4
 import os
 import sqlite3
 from mod_utils import get_config
-        
+
+
 def store_to_sqlite(data_table, city_name):
     data_path = get_config()[-2]['data']
     if city_name != '':
@@ -24,9 +25,9 @@ def store_to_sqlite(data_table, city_name):
             place = row[1]
             longi = row[2]
             lati = row[3]
-            place = place.replace("#","号")
-            longi = longi.replace("'","\'")
-            lati = lati.replace("'","\'")
+            place = place.replace("#", "号")
+            longi = longi.replace("'", "\'")
+            lati = lati.replace("'", "\'")
             so2 = row[7]
             no2 = row[8]
             pm10 = row[9]
@@ -39,27 +40,27 @@ def store_to_sqlite(data_table, city_name):
                 name = row[1]
                 longi = row[2]
                 lati = row[3]
-                name = name.replace("#","号")
-                longi.replace("'","\\'")
-                lati.replace("'","\\'")
+                name = name.replace("#", "号")
+                longi.replace("'", "\\'")
+                lati.replace("'", "\\'")
                 address = row[4]
                 if ID == '':
                     continue
                 print ('New station: ' + ID + '\t' + name.decode('utf-8'))
-                sql = ("INSERT INTO tbl_station VALUES ('" + 
-                       ID + "', '" + name + "', '" + 
-                       address + "', '" + 
-                       longi + "', '" + 
+                sql = ("INSERT INTO tbl_station VALUES ('" +
+                       ID + "', '" + name + "', '" +
+                       address + "', '" +
+                       longi + "', '" +
                        lati + "')")
                 conn.execute(sql)
-                sql = ("CREATE TABLE IF NOT EXISTS " + name + 
-                   "(date DATE, time INTEGER, so2 REAL, no2 REAL, pm10 REAL, " +
-                   "PRIMARY KEY(date, time))")
+                sql = ("CREATE TABLE IF NOT EXISTS " + name +
+                       "(date DATE, time INTEGER, so2 REAL, no2 REAL, pm10 REAL, " +
+                       "PRIMARY KEY(date, time))")
                 conn.execute(sql)
             else:
                 ID = rs[0]
-            sql = ("INSERT OR REPLACE INTO " + place + " VALUES ('" + 
-                   date + "', '" + time + "', '" + 
+            sql = ("INSERT OR REPLACE INTO " + place + " VALUES ('" +
+                   date + "', '" + time + "', '" +
                    so2 + "', '" + no2 + "', '" + pm10 + "')")
             conn.execute(sql)
         conn.commit()
@@ -79,13 +80,14 @@ def store_to_sqlite(data_table, city_name):
             rs = conn.execute(sql).fetchall()
             if not rs:
                 init_database(conn)
-            sql = ("INSERT OR REPLACE INTO tbl_average VALUES ('" + 
-                    date + "', '" + time + "', '" + 
-                    so2 + "', '" + no2 + "', '" + pm10 + "')")
+            sql = ("INSERT OR REPLACE INTO tbl_average VALUES ('" +
+                   date + "', '" + time + "', '" +
+                   so2 + "', '" + no2 + "', '" + pm10 + "')")
             conn.execute(sql)
             conn.commit()
             conn.close()
-            
+
+
 def init_database(conn):
     conn.execute('''
         CREATE TABLE IF NOT EXISTS tbl_average(
@@ -108,7 +110,8 @@ def init_database(conn):
         )
         ''')
     conn.commit()
-    
+
+
 def module_setup():
     data_path = get_config()[-2]['data']
     try:

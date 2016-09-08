@@ -1,4 +1,4 @@
-#coding: utf-8
+# coding: utf-8
 '''
 Author:     Sean Luo
 Email:      Sean.S.Luo@gmail.com
@@ -12,13 +12,14 @@ from mod_utils import convert_to_ug
 
 null = ''
 
+
 def get_data(server_url):
-    '''
+    """
     get data from the server, in plain text format
-    '''
+    """
     req = urllib2.Request(server_url)
     fd = urllib2.urlopen(req)
-    data_str=""
+    data_str = ""
     while True:
         data = fd.read(1024)
         data_str += data
@@ -26,12 +27,13 @@ def get_data(server_url):
             break
     return data_str
 
+
 def add_common_data(row, record, pos_p, pos_c, pos_so2, pos_no2, pos_pm10, pos_dt):
     province = record[pos_p]
     city = record[pos_c]
     SO2 = convert_to_ug(record[pos_so2])
     NO2 = convert_to_ug(record[pos_no2])
-    PM10= convert_to_ug(record[pos_pm10])
+    PM10 = convert_to_ug(record[pos_pm10])
     date = record[pos_dt][0:10]
     time = record[pos_dt][11:]
     row.append(province)
@@ -41,6 +43,7 @@ def add_common_data(row, record, pos_p, pos_c, pos_so2, pos_no2, pos_pm10, pos_d
     row.append(PM10)
     row.append(date)
     row.append(time)
+
 
 def add_desc_data(row, record, pos_place, pos_id, pos_addr, pos_long, pos_lat):
     place = record[pos_place]
@@ -66,16 +69,17 @@ def add_desc_data(row, record, pos_place, pos_id, pos_addr, pos_long, pos_lat):
     row.append(address)
     return True
 
-def proceed_data(data_str, city_name = ''):
-    '''
+
+def proceed_data(data_str, city_name=''):
+    """
     proceed the plain text into format that we can deal with
-    '''
+    """
     global null
     data_table = []
-    if(data_str == ""):
+    if data_str == "":
         return data_table
     try:
-        data_to_parse = eval (data_str)
+        data_to_parse = eval(data_str)
     except:
         return data_table
     recordsets = data_to_parse["recordsets"][0]
@@ -95,13 +99,14 @@ def proceed_data(data_str, city_name = ''):
         data_table.append(row)
     return data_table
 
-def store_data(data_table, store_method, city_name = ''):
-    '''
+
+def store_data(data_table, store_method, city_name=''):
+    """
     store data
     null city name means we are storing average values
     else for some certain city
-    '''
-    if(data_table==[]):
+    """
+    if data_table == []:
         return False
     store_method(data_table, city_name)
     return True

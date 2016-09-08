@@ -1,4 +1,4 @@
-#coding: utf-8
+# coding: utf-8
 '''
 Author:     Sean Luo
 Email:      Sean.S.Luo@gmail.com
@@ -11,10 +11,11 @@ import xlwt
 import os
 from mod_utils import get_cities
 
+
 def make_xls(city_name):
     db_path = '../data/database/' + city_name + '.db'
-    xls_path= '../result_data_folder_has_a_long_name/' + city_name + '.xls'
-    conn  = sqlite3.connect(db_path)
+    xls_path = '../result_data_folder_has_a_long_name/' + city_name + '.xls'
+    conn = sqlite3.connect(db_path)
     conn.text_factory = str
     file = xlwt.Workbook(encoding='utf-8')
     table = file.add_sheet('average')
@@ -61,21 +62,23 @@ def make_xls(city_name):
         file.save(xls_path)
     cur.close()
     conn.close()
-    
+
+
 def main():
     city = get_cities()
     num = len(city)
     cnt = 0
     for one_city in city:
         cnt += 1
-        print (str(cnt)+ '/' + str(num) + '\tMake XLS for: ' + one_city)
+        print (str(cnt) + '/' + str(num) + '\tMake XLS for: ' + one_city)
         try:
             make_xls(one_city)
         except:
             print('Make XLS failed for:' + one_city)
     print ('Job\'s done!')
     raw_input('Press any ENTER to continue...')
-    
+
+
 if __name__ == '__main__':
     try:
         os.mkdir('../result_data_folder_has_a_long_name')
@@ -86,5 +89,3 @@ if __name__ == '__main__':
             pass
         else:
             main()
-    
-    

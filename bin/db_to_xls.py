@@ -1,8 +1,10 @@
-#coding: utf-8
+# coding: utf-8
 __author__ = 'Sean'
 
 import sqlite3
 import xlwt
+
+
 def make_xls():
     db_path = '../data/harbin.db'
     xls_path = '../result_data_folder_has_a_long_name/harbin.xls'
@@ -27,6 +29,7 @@ def make_xls():
         print site
         per_site(site, conn, file, xls_path)
 
+
 def per_site(name, conn, file, xls_path):
     table = file.add_sheet(name)
     cur = conn.cursor()
@@ -44,5 +47,6 @@ def per_site(name, conn, file, xls_path):
         table.write(rowcnt, 3, pm25)
         rowcnt += 1
     file.save(xls_path)
+
 
 make_xls()

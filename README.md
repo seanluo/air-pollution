@@ -1,8 +1,4 @@
-air-pollution
-=============
+### air-pollution
 
-missing
-
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/seanluo/air-pollution/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+Deprecated ugly code written in 2011, for downloading air quality related data.
 

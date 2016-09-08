@@ -8,7 +8,7 @@ import re
 p = re.compile('(20\d{2}\-\d{2}\-\d{2}\s\d{2}):\d{2}:\d{2},\d{3}\sINFO\sTime\sused:\s(\d+)')
 f = open('../log/db_air.log', 'r')
 t = open('../log/result.txt', 'w')
-while(True):
+while True:
     l = f.readline()
     if not l: break
     c = p.findall(l)

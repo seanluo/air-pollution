@@ -6,22 +6,23 @@ Created on 2013-5-12
 """
 
 import sqlite3
-#import xlwt
+import xlwt
 import datetime
 from mod_utils import get_cities
 
+
 def geo():
-    cities = get_cities();
+    cities = get_cities()
     db_to = '../data/geo.db'
-    conn_to  = sqlite3.connect(db_to)
+    conn_to = sqlite3.connect(db_to)
     conn_to.text_factory = str
-    sql = ("CREATE TABLE IF NOT EXISTS site" + 
+    sql = ("CREATE TABLE IF NOT EXISTS site" +
            "(city TEXT, site_name TEXT, address TEXT, longitude TEXT, latitude TEXT)")
     conn_to.execute(sql)
-    
+
     for city_name in cities:
         db_from = '../data/database/' + city_name + '.db'
-        conn_from  = sqlite3.connect(db_from)
+        conn_from = sqlite3.connect(db_from)
         conn_from.text_factory = str
         sql_from = "SELECT * FROM tbl_station"
         cur_from = conn_from.cursor()
@@ -33,26 +34,27 @@ def geo():
         conn_to.commit()
         conn_from.close()
     conn_to.close()
-    
+
+
 def filtered(city_name):
     db_to = '../data/filtered_db/' + city_name + '.db'
-    conn_to  = sqlite3.connect(db_to)
+    conn_to = sqlite3.connect(db_to)
     conn_to.text_factory = str
-    
+
     db_from = '../data/database/' + city_name + '.db'
-    conn_from  = sqlite3.connect(db_from)
+    conn_from = sqlite3.connect(db_from)
     conn_from.text_factory = str
     cur_from = conn_from.cursor()
-    
+
     stations = cur_from.execute("SELECT * FROM tbl_station").fetchall()
     for station in stations:
         tbl_src = station[1]
-        tbl_name = station[1].decode('UTF-8').encode('GBK') 
+        tbl_name = station[1].decode('UTF-8').encode('GBK')
         print tbl_name.decode('cp936')
         dict_one_station = {}
         sql_to = "CREATE TABLE IF NOT EXISTS %s(date TEXT, so2 TEXT, no2 TEXT, pm10 TEXT)" % (tbl_name)
         conn_to.execute(sql_to)
-        
+
         sql_from = "SELECT * FROM %s" % (tbl_src)
         rows = cur_from.execute(sql_from).fetchall()
         dates = []
@@ -61,57 +63,58 @@ def filtered(city_name):
                 dates.append(row[0])
             mydict = dict_one_station.get(row[0])
             if not mydict:
-                mydict = {"so2":[], "no2":[], "pm10":[]}
+                mydict = {"so2": [], "no2": [], "pm10": []}
                 dict_one_station[row[0]] = mydict
             mydict["so2"].append(row[2])
             mydict["no2"].append(row[3])
             mydict["pm10"].append(row[4])
-  
+
         for mydate in dates:
-            day_avg = {"so2":"NA", "no2":"NA", "pm10":"NA"}
+            day_avg = {"so2": "NA", "no2": "NA", "pm10": "NA"}
             so2_tt = 0
             so2_cc = 0
             so2_list = dict_one_station[mydate]["so2"]
             for so2 in so2_list:
-                if (so2>0 and so2<123456):
+                if 0 < so2 < 123456:
                     so2_tt += so2
                     so2_cc += 1
                 if so2_cc >= 12:
-                    so2_avg = so2_tt/so2_cc
+                    so2_avg = so2_tt / so2_cc
                     day_avg["so2"] = "%.2f" % (so2_avg)
-                    
+
             no2_tt = 0
             no2_cc = 0
             no2_list = dict_one_station[mydate]["no2"]
             for no2 in no2_list:
-                if (no2>0 and no2<123456):
+                if 0 < no2 < 123456:
                     no2_tt += no2
                     no2_cc += 1
                 if no2_cc >= 12:
-                    no2_avg = no2_tt/no2_cc
+                    no2_avg = no2_tt / no2_cc
                     day_avg["no2"] = "%.2f" % (no2_avg)
-                    
+
             pm10_tt = 0
             pm10_cc = 0
             pm10_list = dict_one_station[mydate]["pm10"]
             for pm10 in pm10_list:
-                if (pm10>0 and pm10<123456):
-                    if pm10<6:
+                if 0 < pm10 < 123456:
+                    if pm10 < 6:
                         pm10 = 6
                     pm10_tt += pm10
                     pm10_cc += 1
                 if pm10_cc >= 12:
-                    pm10_avg = pm10_tt/pm10_cc
-                    day_avg["pm10"] = "%.2f" % (pm10_avg)
-        
-            sql_to = ("INSERT OR REPLACE INTO %s VALUES ('%s', '%s', '%s', '%s')" 
-                      % (tbl_name, mydate, 
-                         day_avg["so2"], 
-                         day_avg["no2"], 
+                    pm10_avg = pm10_tt / pm10_cc
+                    day_avg["pm10"] = "%.2f" % pm10_avg
+
+            sql_to = ("INSERT OR REPLACE INTO %s VALUES ('%s', '%s', '%s', '%s')"
+                      % (tbl_name, mydate,
+                         day_avg["so2"],
+                         day_avg["no2"],
                          day_avg["pm10"])
                       )
             conn_to.execute(sql_to)
-        conn_to.commit()               
+        conn_to.commit()
+
 
 def get_daily_avg():
     city = get_cities()
@@ -119,22 +122,22 @@ def get_daily_avg():
     cnt = 0
     for one_city in city:
         cnt += 1
-        print (str(cnt)+ '/' + str(num) + '\tprocessing: ' + one_city)
+        print (str(cnt) + '/' + str(num) + '\tprocessing: ' + one_city)
         filtered(one_city)
-        
+
     print ('Job\'s done!')
     raw_input('Press any ENTER to continue...')
 
+
 def xls_avg(city_name):
-   
     db = '../data/filtered_db/' + city_name + '.db'
-    xls= '../data/filtered_xls/' + city_name + '.xls'
-    conn  = sqlite3.connect(db)
+    xls = '../data/filtered_xls/' + city_name + '.xls'
+    conn = sqlite3.connect(db)
     conn.text_factory = str
     cur = conn.cursor()
-    
+
     myfile = xlwt.Workbook(encoding='utf-8')
-    cur.execute("select name from sqlite_master where type='table' order by name;")
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;")
     rs = cur.fetchall()
     for result in rs:
         name = result[0]
@@ -143,19 +146,19 @@ def xls_avg(city_name):
         rset = cur.fetchall()
         table = myfile.add_sheet(name)
         rowcnt = 0
-        d_enter = d=datetime.datetime.strptime("2012-01-01",'%Y-%m-%d')
-        d_exit = d=datetime.datetime.strptime("2013-01-01",'%Y-%m-%d')
+        d_enter = d = datetime.datetime.strptime("2012-01-01", '%Y-%m-%d')
+        d_exit = d = datetime.datetime.strptime("2013-01-01", '%Y-%m-%d')
         d_last = d_enter
         for r in rset:
             mydate = r[0][:-1]
             if mydate == "2010-11-21": continue
-                # this is a bug from data source
-            d = datetime.datetime.strptime(mydate,'%Y-%m-%d')
+            # this is a bug from data source
+            d = datetime.datetime.strptime(mydate, '%Y-%m-%d')
             diff = (d - d_last).days
             if diff < 0: continue
             if diff > 1:
-                for td in xrange(diff-1):
-                    delta = datetime.timedelta(days=td+1)
+                for td in xrange(diff - 1):
+                    delta = datetime.timedelta(days=td + 1)
                     ai_day = (d_last + delta).strftime('%Y-%m-%d')
                     table.write(rowcnt, 0, ai_day)
                     table.write(rowcnt, 1, "NA")
@@ -175,21 +178,23 @@ def xls_avg(city_name):
         myfile.save(xls)
     cur.close()
     conn.close()
-    
+
+
 def get_xls_avg():
     city = get_cities()
     num = len(city)
     cnt = 0
     for one_city in city:
         cnt += 1
-        print (str(cnt)+ '/' + str(num) + '\tprocessing: ' + one_city)
+        print (str(cnt) + '/' + str(num) + '\tprocessing: ' + one_city)
         try:
             xls_avg(one_city)
         except:
             print('fail for:' + one_city)
     print ('Job\'s done!')
     raw_input('Press any ENTER to continue...')
-    
+
+
 def xls_month_avg(city_name):
     all_year = ("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
     db = '../data/filtered_db/' + city_name + '.db'
@@ -198,7 +203,7 @@ def xls_month_avg(city_name):
     conn.text_factory = str
     cur = conn.cursor()
     my_file = xlwt.Workbook(encoding='utf-8')
-    cur.execute("select name from sqlite_master where type='table' order by name;")
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;")
     sites = cur.fetchall()
     table = my_file.add_sheet("sheet0")
     row_cnt = 0
@@ -207,8 +212,8 @@ def xls_month_avg(city_name):
         print name.decode('utf-8')
         cur.execute('SELECT * FROM ' + name)
         daily_records = cur.fetchall()
-        d_enter = datetime.datetime.strptime("2012-01-01",'%Y-%m-%d')
-        d_exit = datetime.datetime.strptime("2013-01-01",'%Y-%m-%d')
+        d_enter = datetime.datetime.strptime("2012-01-01", '%Y-%m-%d')
+        d_exit = datetime.datetime.strptime("2013-01-01", '%Y-%m-%d')
         so2 = {}
         no2 = {}
         pm10 = {}
@@ -227,10 +232,10 @@ def xls_month_avg(city_name):
         for daily_record in daily_records:
             my_date = daily_record[0][:-1]
             if my_date == "2010-11-21":
-            # this is a bug from data source
+                # this is a bug from data source
                 continue
             try:
-                d = datetime.datetime.strptime(my_date,'%Y-%m-%d')
+                d = datetime.datetime.strptime(my_date, '%Y-%m-%d')
             except:
                 continue
             if ((d - d_exit).days >= 0) or ((d - d_enter).days < 0):
@@ -422,19 +427,21 @@ def xls_month_avg(city_name):
     my_file.save(xls)
     cur.close()
     conn.close()
-    
+
+
 def get_xls_month_avg():
     city = get_cities()
     num = len(city)
     cnt = 0
     for one_city in city:
         cnt += 1
-        print (str(cnt)+ '/' + str(num) + '\tprocessing: ' + one_city)
-        #try:
+        print (str(cnt) + '/' + str(num) + '\tprocessing: ' + one_city)
+        # try:
         xls_month_avg(one_city)
-        #except:
-            #print('fail for:' + one_city)
+        # except:
+        # print('fail for:' + one_city)
     print ('Job\'s done!')
     raw_input('Press any ENTER to continue...')
-    
+
+
 get_daily_avg()
